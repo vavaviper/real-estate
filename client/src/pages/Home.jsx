@@ -55,10 +55,10 @@ export default function Home() {
           place with ease
         </h1>
         <div className='text-gray-400 text-xs sm:text-sm'>
-          Varsha Estate is the best place to find your next perfect place to
-          live.
+          Varsha Estate connects buyers, sellers, and renters with the best real estate opportunities across the country. 
+
           <br />
-          We have a wide range of properties for you to choose from.
+          Whether you're looking for a cozy apartment, a sprawling estate, or a commercial property, we have it all!
         </div>
         <Link
           to={'/search'}
