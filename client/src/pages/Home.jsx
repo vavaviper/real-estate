@@ -71,7 +71,7 @@ export default function Home() {
                 </Link>
                 <Link
                   to='/estimate'
-                  className='bg-white hover:bg-blue-50 text-blue-600 px-8 py-4 rounded-lg font-semibold transition text-center shadow-md border-2 border-blue-200'
+                  className='bg-white hover:bg-blue-50 text-blue-600 px-8 py-4 rounded-lg font-semibold transition text-center shadow-md border-2 border-blue-600'
                 >
                   Estimate Price
                 </Link>
