@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 import userRouter from './routes/user.route.js';
 import authRouter from './routes/auth.route.js';
 import listingRouter from './routes/listing.route.js';
@@ -23,7 +24,13 @@ app.use(cookieParser());
 app.use('/api/user', userRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/listing', listingRouter);
-app.use('/api/estimate', estimateRouter);
+
+// 3. ML Proxy (Redirects /api/estimate to Python's /predict)
+app.use('/api/estimate', createProxyMiddleware({ 
+  target: 'http://127.0.0.1:5000', 
+  changeOrigin: true,
+  pathRewrite: { '^/api/estimate': '/predict' } 
+}));
 
 // 3. Static Files (This path works because path.resolve() is the root)
 app.use(express.static(path.join(__dirname, '/client/dist')));
