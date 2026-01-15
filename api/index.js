@@ -5,30 +5,34 @@ import path from 'path';
 import userRouter from './routes/user.route.js';
 import authRouter from './routes/auth.route.js';
 import listingRouter from './routes/listing.route.js';
-import estimateRouter from './routes/estimate.route.js';
+// Remove estimateRouter if the Python server handles it
 import cookieParser from 'cookie-parser';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
-// 1. Initialize dotenv
 dotenv.config(); 
-
-// 2. Set __dirname to the project root
 const __dirname = path.resolve();
-
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
 
-// Routes
+// --- ROUTES ---
+
+// 1. Specific API Routes
 app.use('/api/user', userRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/listing', listingRouter);
-app.use('/api/estimate', estimateRouter);
 
-// 3. Static Files (This path works because path.resolve() is the root)
+// 2. ML Proxy (MUST be above the wildcard '*' route)
+app.use('/api/estimate', createProxyMiddleware({ 
+  target: 'http://127.0.0.1:5000', 
+  changeOrigin: true 
+}));
+
+// 3. Static Files
 app.use(express.static(path.join(__dirname, '/client/dist')));
 
+// 4. Wildcard Route (MUST be last)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
 });
@@ -44,13 +48,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.use('/api/estimate', createProxyMiddleware({ 
-  target: 'http://127.0.0.1:5000', 
-  changeOrigin: true 
-}));
-
-// 4. Connect to DB and Start Server
-// Ensure you have set MONGO in your Render Environment Variables!
+// Connect to DB and Start Server
 const PORT = process.env.PORT || 3000;
 mongoose
   .connect(process.env.MONGO)
