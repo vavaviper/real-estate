@@ -1,6 +1,6 @@
 import { errorHandler } from '../utils/error.js';
 
-const ML_URL = process.env.ML_URL || 'https://real-estate-mush.onrender.com/predict';
+const ML_URL = process.env.ML_URL || 'http://0.0.0.0:5000/predict';
 
 export const getEstimate = async (req, res, next) => {
   try {
