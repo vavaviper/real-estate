@@ -6,9 +6,7 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 import userRouter from './routes/user.route.js';
 import authRouter from './routes/auth.route.js';
 import listingRouter from './routes/listing.route.js';
-// Remove estimateRouter if the Python server handles it
 import cookieParser from 'cookie-parser';
-import { createProxyMiddleware } from 'http-proxy-middleware';
 
 dotenv.config(); 
 const __dirname = path.resolve();
