@@ -7,6 +7,7 @@ import authRouter from './routes/auth.route.js';
 import listingRouter from './routes/listing.route.js';
 import estimateRouter from './routes/estimate.route.js';
 import cookieParser from 'cookie-parser';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 // 1. Initialize dotenv
 dotenv.config(); 
@@ -42,6 +43,11 @@ app.use((err, req, res, next) => {
     message,
   });
 });
+
+app.use('/api/estimate', createProxyMiddleware({ 
+  target: 'http://127.0.0.1:5000', 
+  changeOrigin: true 
+}));
 
 // 4. Connect to DB and Start Server
 // Ensure you have set MONGO in your Render Environment Variables!
