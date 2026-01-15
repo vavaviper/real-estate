@@ -1,7 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
 import path from 'path';
 import userRouter from './routes/user.route.js';
 import authRouter from './routes/auth.route.js';
@@ -9,34 +8,31 @@ import listingRouter from './routes/listing.route.js';
 import estimateRouter from './routes/estimate.route.js';
 import cookieParser from 'cookie-parser';
 
-// compute file-based __dirname for ESM and load .env from same folder as this file
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.join(__dirname, '.env') });
+// 1. Initialize dotenv
+dotenv.config(); 
 
-// ensure MONGO is present
-if (!process.env.MONGO) {
-  console.error(`MONGO env var not set. Make sure ${path.join(__dirname, '.env')} exists and contains MONGO=...`);
-  process.exit(1);
-}
+// 2. Set __dirname to the project root
+const __dirname = path.resolve();
 
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
 
-// register routes and static assets before starting server
+// Routes
 app.use('/api/user', userRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/listing', listingRouter);
 app.use('/api/estimate', estimateRouter);
 
-app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
+// 3. Static Files (This path works because path.resolve() is the root)
+app.use(express.static(path.join(__dirname, '/client/dist')));
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
+  res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
 });
 
+// Error handling middleware
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
@@ -47,7 +43,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-// connect to DB first, then start the server
+// 4. Connect to DB and Start Server
+// Ensure you have set MONGO in your Render Environment Variables!
 const PORT = process.env.PORT || 3000;
 mongoose
   .connect(process.env.MONGO)
