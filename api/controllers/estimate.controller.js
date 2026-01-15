@@ -18,7 +18,9 @@ export const getEstimate = async (req, res, next) => {
     }
 
     const data = await response.json();
-    res.status(200).json({ success: true, data });
+    // Extract the prediction from the ML service response
+    const prediction = data.predicted_price;
+    res.status(200).json({ success: true, data: { prediction } });
   } catch (error) {
     next(error);
   }

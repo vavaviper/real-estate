@@ -23,7 +23,7 @@ export default function Header() {
     }
   }, [location.search]);
   return (
-    <header className='bg-gradient-to-r from-pink-50 via-white to-white shadow-md'>
+    <header className='bg-blue-50 shadow-md'>
       <div className='flex justify-between items-center max-w-6xl mx-auto p-3'>
         <Link to='/'>
           <h1 className='font-bold text-sm sm:text-xl flex flex-wrap items-center gap-1'>
@@ -33,7 +33,7 @@ export default function Header() {
         </Link>
         <form
           onSubmit={handleSubmit}
-          className='bg-white p-2 rounded-full flex items-center shadow-sm border border-pink-50'
+          className='bg-white p-2 rounded-full flex items-center shadow-sm border border-blue-50'
         >
           <input
             type='text'
@@ -47,20 +47,20 @@ export default function Header() {
           </button>
         </form>
         <ul className='flex gap-4 items-center'>
-          <Link to='/'>
+          <Link to='/estimate'>
             <li className='hidden sm:inline text-slate-700 hover:underline'>
-              Home
+              Estimate
             </li>
           </Link>
-          <Link to='/about'>
+          <Link to='/search'>
             <li className='hidden sm:inline text-slate-700 hover:underline'>
-              About
+              Listings
             </li>
           </Link>
           <Link to='/profile'>
             {currentUser ? (
               <img
-                className='rounded-full h-8 w-8 object-cover ring-2 ring-pink-100'
+                className='rounded-full h-8 w-8 object-cover ring-2 ring-blue-100'
                 src={currentUser.avatar}
                 alt='profile'
               />

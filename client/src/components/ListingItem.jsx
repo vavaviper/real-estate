@@ -27,7 +27,7 @@ export default function ListingItem({ listing }) {
             {listing.description}
           </p>
           <p className='mt-2'>
-            <span className='badge-pink'>$
+            <span className='badge-blue'>$
               {listing.offer
                 ? listing.discountPrice.toLocaleString('en-US')
                 : listing.regularPrice.toLocaleString('en-US')}

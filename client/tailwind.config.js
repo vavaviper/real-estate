@@ -5,14 +5,14 @@ export default {
     extend: {
       colors: {
         primary: {
-          50: '#fff0f6',
-          100: '#ffe4ec',
-          200: '#ffcce0',
-          300: '#ffa6c7',
-          400: '#ff7fb0',
-          500: '#ec4899',
-          600: '#db2777',
-          700: '#be185d',
+          50: '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#2563eb',
+          600: '#1d4ed8',
+          700: '#1e40af',
         },
       },
       fontFamily: {
