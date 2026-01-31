@@ -1,8 +1,8 @@
 fastapi
 uvicorn[standard]
-scikit-learn
+torch
 pandas
 numpy
-joblib
 python-multipart
 pydantic
+scikit-learn

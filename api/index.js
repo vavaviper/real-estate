@@ -22,11 +22,29 @@ app.use('/api/user', userRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/listing', listingRouter);
 
-// 3. ML Proxy (Redirects /api/estimate to Python's /predict)
-app.use('/api/estimate', createProxyMiddleware({ 
-  target: 'http://127.0.0.1:5000', 
+// ML service internal URL (same container on Render)
+const ML_INTERNAL_URL = process.env.ML_INTERNAL_URL || 'http://127.0.0.1:5000';
+
+// ML Health proxy (GET -> /health)
+app.use('/api/ml-health', createProxyMiddleware({
+  target: ML_INTERNAL_URL,
   changeOrigin: true,
-  pathRewrite: { '^/api/estimate': '/predict' } 
+  pathRewrite: { '^/api/ml-health': '/health' },
+}));
+
+// ML Predict proxy (POST -> /predict). Ensure JSON body is forwarded.
+app.use('/api/estimate', createProxyMiddleware({
+  target: ML_INTERNAL_URL,
+  changeOrigin: true,
+  pathRewrite: { '^/api/estimate': '/predict' },
+  onProxyReq: (proxyReq, req) => {
+    if (req.body && Object.keys(req.body).length) {
+      const bodyData = JSON.stringify(req.body);
+      proxyReq.setHeader('Content-Type', 'application/json');
+      proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+      proxyReq.write(bodyData);
+    }
+  },
 }));
 
 // 3. Static Files

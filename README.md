@@ -19,8 +19,9 @@ A full-stack real estate listing platform with AI-powered price estimation. Buil
 
 ### AI-Powered Features
 
-- **Price Estimator**: Predict property prices using a scikit-learn machine learning model trained on historical housing data
+- **Price Estimator**: Predict property prices using a PyTorch neural network trained on historical housing data
 - **Smart Valuations**: Get instant property valuations based on features like area, bedrooms, bathrooms, amenities, and location
+- **Deep Learning**: Multi-layer perceptron (MLP) architecture with 64→32→1 neurons for accurate price predictions
 
 ---
 
@@ -47,9 +48,9 @@ A full-stack real estate listing platform with AI-powered price estimation. Buil
 ### Machine Learning
 
 - **Python 3** with FastAPI
-- **scikit-learn** for the GradientBoosting regression model
-- **joblib** for model serialization
-- **NumPy & Pandas** for data processing
+- **PyTorch** for neural network regression (MLP architecture)
+- **NumPy & Pandas** for data preprocessing and feature engineering
+- **JSON** for preprocessing metadata serialization
 
 ---
 
@@ -61,7 +62,6 @@ real-estate/
 │   ├── controllers/              # Route handlers
 │   │   ├── auth.controller.js
 │   │   ├── listing.controller.js
-│   │   ├── estimate.controller.js
 │   │   └── user.controller.js
 │   ├── models/                   # MongoDB schemas
 │   │   ├── user.model.js
@@ -69,7 +69,6 @@ real-estate/
 │   ├── routes/                   # API endpoints
 │   │   ├── auth.route.js
 │   │   ├── listing.route.js
-│   │   ├── estimate.route.js
 │   │   └── user.route.js
 │   ├── utils/                    # Helper functions
 │   │   ├── error.js
@@ -110,11 +109,11 @@ real-estate/
 │   └── .env                      # Environment variables
 │
 ├── ml/                           # Python ML service
-│   ├── app.py                    # FastAPI server
-│   ├── train.py                  # Model training script
-│   ├── model.joblib              # Trained model file
-│   ├── requirements.txt
-│   └── Housing.csv               # Training dataset
+│   ├── app.py                    # FastAPI inference server
+│   ├── train.py                  # PyTorch model training script
+│   ├── model.pt                  # Trained PyTorch model weights
+│   ├── preprocessing.json        # Feature normalization metadata
+│   └── requirements.txt          # Python dependencies
 │
 ├── Housing.csv                   # Dataset for ML training
 ├── package.json
@@ -199,12 +198,20 @@ cd client
 npm run dev
 ```
 
-**Terminal 3 - ML Service (Port 10000)**
+**Terminal 3 - ML Service (Port 5000)**
 
 ```bash
 cd ml
-uvicorn app:app --host 0.0.0.0 --port 10000
+uvicorn app:app --host 0.0.0.0 --port 5000
 ```
+
+**Or run everything with Concurrently:**
+
+```bash
+npm start
+```
+
+This starts both the Express server (port 3000) and FastAPI (port 5000) simultaneously.
 
 The application will be available at `http://localhost:5173`
 
@@ -212,27 +219,71 @@ The application will be available at `http://localhost:5173`
 
 ## 🤖 AI Price Estimation
 
+### Neural Network Architecture
+
+The model uses a **Multi-Layer Perceptron (MLP)** implemented in PyTorch:
+
+```
+Input Layer (14-16 features depending on furnishing categories)
+    ↓
+Linear(64) → ReLU activation
+    ↓
+Linear(32) → ReLU activation
+    ↓
+Linear(1) → Price prediction (output)
+```
+
 ### How It Works
 
-1. **Model Training**
+1. **Data Preprocessing**
 
-   - Uses scikit-learn's GradientBoostingRegressor
-   - Trained on historical housing data from `Housing.csv`
-   - Features include: area, bedrooms, bathrooms, stories, parking, furnishing status, amenities, and location
+   - **Binary Features**: Converts yes/no to 0/1 (mainroad, guestroom, basement, hotwaterheating, airconditioning, prefarea)
+   - **Numeric Features**: Standardizes using z-score normalization: `(value - mean) / std`
+     - `area`, `bedrooms`, `bathrooms`, `stories`, `parking`
+   - **Categorical Features**: One-hot encodes `furnishingstatus` (furnished/semi-furnished/unfurnished)
 
-2. **API Flow**
+2. **Training Process**
+
+   - **Optimizer**: Adam with learning rate 0.001
+   - **Loss Function**: Mean Squared Error (MSE)
+   - **Epochs**: 300 iterations through the dataset
+   - **Batch Size**: 32 samples per gradient update
+   - **Validation**: 80/20 train/validation split to monitor performance
+   - **Metrics**: Root Mean Squared Error (RMSE) reported every 50 epochs
+
+3. **API Flow**
 
    - Frontend sends property details to `POST /api/estimate`
-   - Backend validates request and forwards to ML service
-   - ML service returns predicted price
-   - Frontend displays estimation to user
+   - Express proxy forwards request to FastAPI on port 5000 (`/predict` endpoint)
+   - FastAPI normalizes features using saved preprocessing metadata
+   - PyTorch model performs inference (forward pass)
+   - Predicted price returned to frontend
 
-3. **Training the Model**
+4. **Training the Model**
    ```bash
    cd ml
    python train.py
    ```
-   This generates `model.joblib` which the FastAPI server loads at startup.
+   This generates:
+   - `model.pt` - PyTorch model weights
+   - `preprocessing.json` - Feature means/stds and category mappings
+
+### Model Features
+
+| Feature            | Type        | Description                          |
+| ------------------ | ----------- | ------------------------------------ |
+| `area`             | Numeric     | Property area in sq ft               |
+| `bedrooms`         | Numeric     | Number of bedrooms                   |
+| `bathrooms`        | Numeric     | Number of bathrooms                  |
+| `stories`          | Numeric     | Number of floors                     |
+| `parking`          | Numeric     | Parking spaces                       |
+| `mainroad`         | Binary      | Access to main road (0/1)            |
+| `guestroom`        | Binary      | Has guest room (0/1)                 |
+| `basement`         | Binary      | Has basement (0/1)                   |
+| `hotwaterheating`  | Binary      | Has hot water heating (0/1)          |
+| `airconditioning`  | Binary      | Has AC (0/1)                         |
+| `prefarea`         | Binary      | Located in preferred area (0/1)      |
+| `furnishingstatus` | Categorical | furnished/semi-furnished/unfurnished |
 
 ### Using the Estimator
 
@@ -337,10 +388,9 @@ The application will be available at `http://localhost:5173`
 ### Backend (`api/.env`)
 
 ```
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/dbname
+MONGO=mongodb+srv://username:password@cluster.mongodb.net/dbname
 JWT_SECRET=your_secret_key_here
 FIREBASE_API_KEY=your_firebase_key
-ML_URL=http://127.0.0.1:10000/predict
 PORT=3000
 ```
 
