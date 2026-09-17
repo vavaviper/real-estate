@@ -2,7 +2,7 @@
 
 A full-stack real estate listing platform with AI-powered price estimation. Built with the MERN stack (MongoDB, Express.js, React, Node.js) and integrated with machine learning for property valuation.
 
-**Live Demo:** https://varsha-estate.onrender.com
+**Live Demo:** [https://varsha-estate.onrender.com](https://varsha-estate.vercel.app/)
 
 ---
 
